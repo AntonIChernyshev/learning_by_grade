@@ -152,7 +152,7 @@ export default async function handler(
         model: MODEL,
         max_tokens: 1000,
         temperature: 0.9, // Increased temperature for more randomness
-        system: "You are a helpful educational assistant that creates age-appropriate exercises for children. Always respond with valid JSON that can be parsed. Make sure exercises have clear, specific answers that fit the exercise-answer pair format. Create unique, varied exercises each time.",
+        system: "You are a helpful educational assistant that creates age-appropriate exercises for children. Always respond with valid JSON that can be parsed. Do not include additional info. Make sure exercises have clear, specific answers that fit the exercise-answer pair format. Create unique, varied exercises each time.",
         messages: [
           {
             role: 'user',

@@ -41,19 +41,84 @@ export default async function handler(
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    // Use Anthropic's Claude to generate an exercise
-    const prompt = `You are an educational assistant creating age-appropriate ${subject} exercises for grade ${grade} students. 
-    Generate a ${difficulty} level problem with a clear answer. The exercise should be fun and engaging.
+    // Create subject-specific prompts
+    let prompt = '';
     
-    Please create a ${difficulty} ${subject} exercise for a ${grade}nd grade student.
-    
-    Format your response as a JSON object with exactly these two fields:
-    {
-      "exercise": "The exercise question here",
-      "answer": "The answer here"
+    if (subject === 'math') {
+      prompt = `You are an educational assistant creating age-appropriate math exercises for grade ${grade} students.
+      Generate a ${difficulty} level math problem with a clear numerical or short text answer. 
+      
+      For ${difficulty} difficulty and grade ${grade}:
+      - Easy: Simple addition, subtraction, or counting problems
+      - Medium: Multi-step arithmetic, simple word problems
+      - Hard: More complex word problems, beginning multiplication/division
+      
+      The exercise should be fun, engaging, and have a single correct answer.
+      
+      Format your response as a JSON object with exactly these two fields:
+      {
+        "exercise": "The math problem here",
+        "answer": "The numerical or short text answer here"
+      }
+      
+      Make sure the exercise is appropriate for grade ${grade} students and the answer is clear and unambiguous.`;
+    } 
+    else if (subject === 'english') {
+      prompt = `You are an educational assistant creating age-appropriate English language exercises for grade ${grade} students.
+      Generate a ${difficulty} level English exercise with a clear, specific answer.
+      
+      For ${difficulty} difficulty and grade ${grade}, choose ONE of these exercise types:
+      - Opposites: "What is the opposite of [word]?"
+      - Fill-in-the-blank: "Complete the sentence: ___"
+      - Word unscramble: "Unscramble these letters to make a word: A-B-C-D"
+      - Rhyming words: "What rhymes with [word]?"
+      - Spelling: "How do you spell [simple word]?"
+      - Categorization: "Which word belongs in the group: [animals, colors, etc.]?"
+      
+      The exercise should have a single correct answer that is a word or short phrase.
+      
+      Format your response as a JSON object with exactly these two fields:
+      {
+        "exercise": "The English exercise here",
+        "answer": "The single word or short phrase answer here"
+      }
+      
+      Make sure the exercise is appropriate for grade ${grade} students and the answer is clear and unambiguous.`;
     }
-    
-    Make sure the exercise is appropriate for grade ${grade} students and the answer is clear and unambiguous.`;
+    else if (subject === 'science') {
+      prompt = `You are an educational assistant creating age-appropriate science exercises for grade ${grade} students.
+      Generate a ${difficulty} level science question with a clear, specific answer.
+      
+      For ${difficulty} difficulty and grade ${grade}, focus on:
+      - Easy: Basic facts about animals, plants, weather, or the human body
+      - Medium: Simple cause and effect relationships in nature
+      - Hard: Beginning concepts about the solar system, states of matter, or life cycles
+      
+      The exercise should have a single correct answer that is a word, short phrase, or simple explanation.
+      
+      Format your response as a JSON object with exactly these two fields:
+      {
+        "exercise": "The science question here",
+        "answer": "The word, short phrase, or simple explanation answer here"
+      }
+      
+      Make sure the exercise is appropriate for grade ${grade} students and the answer is clear and unambiguous.`;
+    }
+    else {
+      // Default prompt for other subjects
+      prompt = `You are an educational assistant creating age-appropriate ${subject} exercises for grade ${grade} students. 
+      Generate a ${difficulty} level problem with a clear answer. The exercise should be fun and engaging.
+      
+      Please create a ${difficulty} ${subject} exercise for a ${grade}nd grade student.
+      
+      Format your response as a JSON object with exactly these two fields:
+      {
+        "exercise": "The exercise question here",
+        "answer": "The answer here"
+      }
+      
+      Make sure the exercise is appropriate for grade ${grade} students and the answer is clear and unambiguous.`;
+    }
 
     console.log('Sending request to Anthropic API with model:', MODEL);
     console.log('Prompt:', prompt);
@@ -63,7 +128,7 @@ export default async function handler(
         model: MODEL,
         max_tokens: 1000,
         temperature: 0.7,
-        system: "You are a helpful educational assistant that creates age-appropriate exercises for children. Always respond with valid JSON that can be parsed.",
+        system: "You are a helpful educational assistant that creates age-appropriate exercises for children. Always respond with valid JSON that can be parsed. Make sure exercises have clear, specific answers that fit the exercise-answer pair format.",
         messages: [
           {
             role: 'user',

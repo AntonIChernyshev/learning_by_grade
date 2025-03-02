@@ -32,27 +32,110 @@ export default async function handler(
   }
 
   try {
-    const { exercise, answer, grade } = req.body;
-    console.log('Extracted parameters:', { exercise, answer, grade });
+    const { exercise, answer, grade, subject } = req.body;
+    console.log('Extracted parameters:', { exercise, answer, grade, subject });
 
     if (!exercise || !answer) {
       console.log('Missing required parameters');
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    // Use Anthropic's Claude to generate a hint
-    const prompt = `You are an educational assistant helping grade ${grade} students with exercises. 
-    For the exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
+    // Detect subject if not provided
+    let detectedSubject = subject || '';
+    if (!detectedSubject) {
+      // Simple subject detection based on keywords
+      const exerciseLower = exercise.toLowerCase();
+      if (exerciseLower.includes('add') || 
+          exerciseLower.includes('subtract') || 
+          exerciseLower.includes('equal') || 
+          exerciseLower.includes('number') ||
+          exerciseLower.includes('count') ||
+          exerciseLower.includes('how many')) {
+        detectedSubject = 'math';
+      } else if (exerciseLower.includes('word') || 
+                exerciseLower.includes('letter') || 
+                exerciseLower.includes('opposite') || 
+                exerciseLower.includes('unscramble') ||
+                exerciseLower.includes('spell') ||
+                exerciseLower.includes('rhyme')) {
+        detectedSubject = 'english';
+      } else if (exerciseLower.includes('planet') || 
+                exerciseLower.includes('animal') || 
+                exerciseLower.includes('plant') || 
+                exerciseLower.includes('water') ||
+                exerciseLower.includes('weather') ||
+                exerciseLower.includes('body')) {
+        detectedSubject = 'science';
+      } else {
+        detectedSubject = 'general';
+      }
+    }
     
-    The hint should:
-    1. Guide the student toward the answer without giving it away completely
-    2. Be age-appropriate and encouraging for a 7-year-old
-    3. Be clear and concise (1-2 sentences)
+    console.log('Detected subject:', detectedSubject);
+
+    // Create subject-specific prompts for hints
+    let prompt = '';
     
-    Format your response as a JSON object with exactly this field:
-    {
-      "hint": "Your hint here"
-    }`;
+    if (detectedSubject === 'math') {
+      prompt = `You are an educational assistant helping grade ${grade} students with math exercises. 
+      For the math exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
+      
+      The hint should:
+      1. Guide the student toward the mathematical concept or operation needed (addition, subtraction, etc.)
+      2. Not give away the numerical answer directly
+      3. Be age-appropriate and encouraging for a grade ${grade} student
+      4. Be clear and concise (1-2 sentences)
+      
+      Format your response as a JSON object with exactly this field:
+      {
+        "hint": "Your hint here"
+      }`;
+    } 
+    else if (detectedSubject === 'english') {
+      prompt = `You are an educational assistant helping grade ${grade} students with English language exercises. 
+      For the English exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
+      
+      The hint should:
+      1. Guide the student toward thinking about word meanings, spelling patterns, or language rules
+      2. Not give away the exact answer
+      3. Be age-appropriate and encouraging for a grade ${grade} student
+      4. Be clear and concise (1-2 sentences)
+      
+      Format your response as a JSON object with exactly this field:
+      {
+        "hint": "Your hint here"
+      }`;
+    }
+    else if (detectedSubject === 'science') {
+      prompt = `You are an educational assistant helping grade ${grade} students with science exercises. 
+      For the science exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
+      
+      The hint should:
+      1. Guide the student toward the scientific concept or fact needed
+      2. Relate to their everyday experiences when possible
+      3. Be age-appropriate and encouraging for a grade ${grade} student
+      4. Be clear and concise (1-2 sentences)
+      
+      Format your response as a JSON object with exactly this field:
+      {
+        "hint": "Your hint here"
+      }`;
+    }
+    else {
+      // Default prompt for other subjects
+      prompt = `You are an educational assistant helping grade ${grade} students with exercises. 
+      For the exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
+      
+      The hint should:
+      1. Guide the student toward the answer without giving it away completely
+      2. Be age-appropriate and encouraging for a grade ${grade} student
+      3. Be clear and concise (1-2 sentences)
+      
+      Format your response as a JSON object with exactly this field:
+      {
+        "hint": "Your hint here"
+      }`;
+    }
 
     console.log('Sending request to Anthropic API with model:', MODEL);
     console.log('Prompt:', prompt);
@@ -62,7 +145,7 @@ export default async function handler(
         model: MODEL,
         max_tokens: 1000,
         temperature: 0.7,
-        system: "You are a helpful educational assistant that creates age-appropriate hints for children. Always respond with valid JSON that can be parsed.",
+        system: "You are a helpful educational assistant that creates age-appropriate hints for children. Always respond with valid JSON that can be parsed. Your hints should guide without giving away the answer directly.",
         messages: [
           {
             role: 'user',

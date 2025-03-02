@@ -80,11 +80,10 @@ export default async function handler(
       
       For ${difficulty} difficulty and grade ${grade}, choose ONE of these exercise types:
       - Opposites: "What is the opposite of [word]?"
-      - Fill-in-the-blank: "Complete the sentence: ___"
+      - Fill-in-the-blank: "Complete the sentence: ___, pick one of these options: [options]"
       - Word unscramble: "Unscramble these letters to make a word: A-B-C-D"
-      - Rhyming words: "What rhymes with [word]?"
-      - Spelling: "How do you spell [simple word]?"
-      - Categorization: "Which word belongs in the group: [animals, colors, etc.]?"
+      - Rhyming words: "What rhymes with [word] out of these options: [options]?"
+      - Categorization: "Which word out of [options] belongs in the [category]?"
       
       IMPORTANT: Be creative and generate a UNIQUE exercise. Use random seed ${randomSeed} to inspire variety.
       Choose different words, sentences, and concepts than you might typically use.

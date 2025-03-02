@@ -8,7 +8,8 @@ const anthropic = new Anthropic({
 
 // Model options: claude-3-haiku-20240307 (fastest), claude-3-sonnet-20240229 (balanced), claude-3-opus-20240229 (most powerful)
 // New model: claude-3-5-haiku-20241022 (latest and improved Haiku model)
-const MODEL = 'claude-3-5-haiku-20241022';
+// Latest model: claude-3-7-sonnet-20240229 (latest and most powerful Sonnet model)
+const MODEL = 'claude-3-7-sonnet-20240229';
 
 type Data = {
   exercise?: string;
@@ -58,8 +59,13 @@ export default async function handler(
       
       The exercise should be fun, engaging, and have a single correct answer.
       
-      IMPORTANT: Be creative and generate a UNIQUE exercise. Use random seed ${randomSeed} to inspire variety.
-      Choose different numbers, scenarios, and contexts than you might typically use.
+      Before crafting your exercise pick one of these topics at random:
+      - Addition and subtraction within 100
+      - Understanding place value (ones, tens, hundreds)
+      - Measuring length using standard units
+      - Telling time to the nearest 5 minutes
+      - Counting money (coins and bills)
+      - Basic fractions (halves, thirds, fourths)
       
       Format your response as a JSON object with exactly these two fields:
       {
@@ -150,8 +156,8 @@ export default async function handler(
     try {
       const message = await anthropic.messages.create({
         model: MODEL,
-        max_tokens: 1000,
-        temperature: 0.9, // Increased temperature for more randomness
+        max_tokens: 400,
+        temperature: 1, // Increased temperature for more randomness
         system: "You are a helpful educational assistant that creates age-appropriate exercises for children. Always respond with valid JSON that can be parsed. Do not include additional info. Make sure exercises have clear, specific answers that fit the exercise-answer pair format. Create unique, varied exercises each time.",
         messages: [
           {

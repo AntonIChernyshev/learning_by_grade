@@ -31,7 +31,7 @@ export default async function handler(
     }
 
     // Use Anthropic's Claude to generate a hint
-    const prompt = `You are an educational assistant helping grade ${grade} students (7 years old) with exercises. 
+    const prompt = `You are an educational assistant helping grade ${grade} students with exercises. 
     For the exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
     
     The hint should:

@@ -88,12 +88,12 @@ export default async function handler(
       IMPORTANT: Be creative and generate a UNIQUE exercise. Use random seed ${randomSeed} to inspire variety.
       Choose different words, sentences, and concepts than you might typically use.
       
-      The exercise should have a single correct answer that is a word or short phrase.
+      The exercise should have a single correct answer that is a word.
       
       Format your response as a JSON object with exactly these two fields:
       {
         "exercise": "The English exercise here",
-        "answer": "The single word or short phrase answer here"
+        "answer": "The single word answer here"
       }
       
       Make sure the exercise is appropriate for grade ${grade} students and the answer is clear and unambiguous.`;

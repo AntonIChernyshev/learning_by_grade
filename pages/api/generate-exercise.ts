@@ -41,6 +41,9 @@ export default async function handler(
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
+    // Add a random seed to ensure variety in exercise generation
+    const randomSeed = Math.floor(Math.random() * 10000);
+    
     // Create subject-specific prompts
     let prompt = '';
     
@@ -54,6 +57,9 @@ export default async function handler(
       - Hard: More complex word problems, beginning multiplication/division
       
       The exercise should be fun, engaging, and have a single correct answer.
+      
+      IMPORTANT: Be creative and generate a UNIQUE exercise. Use random seed ${randomSeed} to inspire variety.
+      Choose different numbers, scenarios, and contexts than you might typically use.
       
       Format your response as a JSON object with exactly these two fields:
       {
@@ -75,6 +81,9 @@ export default async function handler(
       - Spelling: "How do you spell [simple word]?"
       - Categorization: "Which word belongs in the group: [animals, colors, etc.]?"
       
+      IMPORTANT: Be creative and generate a UNIQUE exercise. Use random seed ${randomSeed} to inspire variety.
+      Choose different words, sentences, and concepts than you might typically use.
+      
       The exercise should have a single correct answer that is a word or short phrase.
       
       Format your response as a JSON object with exactly these two fields:
@@ -89,10 +98,23 @@ export default async function handler(
       prompt = `You are an educational assistant creating age-appropriate science exercises for grade ${grade} students.
       Generate a ${difficulty} level science question with a clear, specific answer.
       
-      For ${difficulty} difficulty and grade ${grade}, focus on:
-      - Easy: Basic facts about animals, plants, weather, or the human body
-      - Medium: Simple cause and effect relationships in nature
-      - Hard: Beginning concepts about the solar system, states of matter, or life cycles
+      For ${difficulty} difficulty and grade ${grade}, focus on ONE of these topics:
+      - Easy: 
+        * Animals (habitats, characteristics, diet)
+        * Plants (parts, growth, needs)
+        * Weather (types, seasons, clothing)
+        * Human body (parts, senses, basic functions)
+      - Medium: 
+        * Simple cause and effect relationships in nature
+        * Basic environmental concepts
+        * Food chains
+      - Hard: 
+        * Solar system (planets, sun, moon)
+        * States of matter (solid, liquid, gas)
+        * Life cycles (butterfly, frog, plant)
+      
+      IMPORTANT: Be creative and generate a UNIQUE exercise. Use random seed ${randomSeed} to inspire variety.
+      Choose different scientific concepts and questions than you might typically use.
       
       The exercise should have a single correct answer that is a word, short phrase, or simple explanation.
       
@@ -111,6 +133,8 @@ export default async function handler(
       
       Please create a ${difficulty} ${subject} exercise for a ${grade}nd grade student.
       
+      IMPORTANT: Be creative and generate a UNIQUE exercise. Use random seed ${randomSeed} to inspire variety.
+      
       Format your response as a JSON object with exactly these two fields:
       {
         "exercise": "The exercise question here",
@@ -127,8 +151,8 @@ export default async function handler(
       const message = await anthropic.messages.create({
         model: MODEL,
         max_tokens: 1000,
-        temperature: 0.7,
-        system: "You are a helpful educational assistant that creates age-appropriate exercises for children. Always respond with valid JSON that can be parsed. Make sure exercises have clear, specific answers that fit the exercise-answer pair format.",
+        temperature: 0.9, // Increased temperature for more randomness
+        system: "You are a helpful educational assistant that creates age-appropriate exercises for children. Always respond with valid JSON that can be parsed. Make sure exercises have clear, specific answers that fit the exercise-answer pair format. Create unique, varied exercises each time.",
         messages: [
           {
             role: 'user',
@@ -180,19 +204,46 @@ export default async function handler(
         let exercise = '';
         let answer = '';
 
+        // Add more variety to fallback exercises with randomization
+        const randomFactor = Math.floor(Math.random() * 3); // 0, 1, or 2
+        
         if (subject === 'math') {
           switch (difficulty) {
             case 'easy':
-              exercise = 'If you have 5 apples and your friend gives you 3 more apples, how many apples do you have now?';
-              answer = '8';
+              if (randomFactor === 0) {
+                exercise = 'If you have 5 apples and your friend gives you 3 more apples, how many apples do you have now?';
+                answer = '8';
+              } else if (randomFactor === 1) {
+                exercise = 'Count how many stars: ★ ★ ★ ★ ★ ★';
+                answer = '6';
+              } else {
+                exercise = 'What is 4 + 5?';
+                answer = '9';
+              }
               break;
             case 'medium':
-              exercise = 'Sarah has 15 stickers. She gives 7 stickers to her friend. How many stickers does Sarah have left?';
-              answer = '8';
+              if (randomFactor === 0) {
+                exercise = 'Sarah has 15 stickers. She gives 7 stickers to her friend. How many stickers does Sarah have left?';
+                answer = '8';
+              } else if (randomFactor === 1) {
+                exercise = 'You have 12 crayons and put them in boxes of 3. How many boxes do you need?';
+                answer = '4';
+              } else {
+                exercise = 'What is 14 - 6?';
+                answer = '8';
+              }
               break;
             case 'hard':
-              exercise = 'Tom has 24 marbles. He wants to share them equally among 4 friends. How many marbles will each friend get?';
-              answer = '6';
+              if (randomFactor === 0) {
+                exercise = 'Tom has 24 marbles. He wants to share them equally among 4 friends. How many marbles will each friend get?';
+                answer = '6';
+              } else if (randomFactor === 1) {
+                exercise = 'Lisa has 3 bags with 5 candies in each bag. How many candies does she have in total?';
+                answer = '15';
+              } else {
+                exercise = 'There are 20 students in a class. If 12 are girls, how many are boys?';
+                answer = '8';
+              }
               break;
             default:
               exercise = 'Count from 1 to 10.';
@@ -201,16 +252,40 @@ export default async function handler(
         } else if (subject === 'english') {
           switch (difficulty) {
             case 'easy':
-              exercise = 'What is the opposite of "hot"?';
-              answer = 'cold';
+              if (randomFactor === 0) {
+                exercise = 'What is the opposite of "hot"?';
+                answer = 'cold';
+              } else if (randomFactor === 1) {
+                exercise = 'What is the opposite of "big"?';
+                answer = 'small';
+              } else {
+                exercise = 'What is the opposite of "day"?';
+                answer = 'night';
+              }
               break;
             case 'medium':
-              exercise = 'Unscramble these letters to make a word: C-A-T-H';
-              answer = 'chat';
+              if (randomFactor === 0) {
+                exercise = 'Unscramble these letters to make a word: C-A-T-H';
+                answer = 'chat';
+              } else if (randomFactor === 1) {
+                exercise = 'Unscramble these letters to make a word: G-D-O';
+                answer = 'dog';
+              } else {
+                exercise = 'What rhymes with "cat"?';
+                answer = 'hat, bat, rat, mat';
+              }
               break;
             case 'hard':
-              exercise = 'Fill in the blank: The cat jumped _____ the table.';
-              answer = 'onto';
+              if (randomFactor === 0) {
+                exercise = 'Fill in the blank: The cat jumped _____ the table.';
+                answer = 'onto';
+              } else if (randomFactor === 1) {
+                exercise = 'Which word doesn\'t belong: apple, banana, carrot, orange';
+                answer = 'carrot';
+              } else {
+                exercise = 'Fill in the blank: I _____ to school every day.';
+                answer = 'go';
+              }
               break;
             default:
               exercise = 'Name three animals that start with the letter "B".';
@@ -219,16 +294,40 @@ export default async function handler(
         } else if (subject === 'science') {
           switch (difficulty) {
             case 'easy':
-              exercise = 'Name the planet we live on.';
-              answer = 'Earth';
+              if (randomFactor === 0) {
+                exercise = 'Name the planet we live on.';
+                answer = 'Earth';
+              } else if (randomFactor === 1) {
+                exercise = 'What do we call frozen water?';
+                answer = 'Ice';
+              } else {
+                exercise = 'What animal says "moo"?';
+                answer = 'Cow';
+              }
               break;
             case 'medium':
-              exercise = 'What do plants need to grow? Name three things.';
-              answer = 'water, sunlight, soil';
+              if (randomFactor === 0) {
+                exercise = 'What do plants need to grow? Name three things.';
+                answer = 'water, sunlight, soil';
+              } else if (randomFactor === 1) {
+                exercise = 'Name the four seasons.';
+                answer = 'spring, summer, fall/autumn, winter';
+              } else {
+                exercise = 'What do we call animals that eat only plants?';
+                answer = 'Herbivores';
+              }
               break;
             case 'hard':
-              exercise = 'What happens to water when it freezes?';
-              answer = 'It turns into ice';
+              if (randomFactor === 0) {
+                exercise = 'What happens to water when it freezes?';
+                answer = 'It turns into ice';
+              } else if (randomFactor === 1) {
+                exercise = 'What is the closest planet to the sun?';
+                answer = 'Mercury';
+              } else {
+                exercise = 'What are the three states of matter?';
+                answer = 'solid, liquid, gas';
+              }
               break;
             default:
               exercise = 'Name three states of matter.';

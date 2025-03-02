@@ -35,106 +35,150 @@ export default async function handler(
     const { exercise, answer, grade, subject } = req.body;
     console.log('Extracted parameters:', { exercise, answer, grade, subject });
 
-    if (!exercise || !answer) {
+    if (!exercise || !answer || !grade) {
       console.log('Missing required parameters');
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    // Detect subject if not provided
-    let detectedSubject = subject || '';
-    if (!detectedSubject) {
-      // Simple subject detection based on keywords
+    // Add a random seed to ensure variety in hint generation
+    const randomSeed = Math.floor(Math.random() * 10000);
+    
+    // Detect subject from exercise content if not provided
+    let detectedSubject = subject || 'general';
+    
+    if (!subject) {
+      console.log('Subject not provided, attempting to detect from exercise content');
+      
+      // Simple keyword-based subject detection
       const exerciseLower = exercise.toLowerCase();
-      if (exerciseLower.includes('add') || 
+      
+      if (exerciseLower.includes('math') || 
+          exerciseLower.includes('add') || 
           exerciseLower.includes('subtract') || 
-          exerciseLower.includes('equal') || 
+          exerciseLower.includes('equal') ||
           exerciseLower.includes('number') ||
           exerciseLower.includes('count') ||
+          exerciseLower.includes('+') ||
+          exerciseLower.includes('-') ||
+          exerciseLower.includes('=') ||
+          exerciseLower.includes('sum') ||
+          exerciseLower.includes('total') ||
           exerciseLower.includes('how many')) {
         detectedSubject = 'math';
-      } else if (exerciseLower.includes('word') || 
-                exerciseLower.includes('letter') || 
-                exerciseLower.includes('opposite') || 
-                exerciseLower.includes('unscramble') ||
-                exerciseLower.includes('spell') ||
-                exerciseLower.includes('rhyme')) {
+      } 
+      else if (exerciseLower.includes('word') || 
+               exerciseLower.includes('sentence') || 
+               exerciseLower.includes('opposite') ||
+               exerciseLower.includes('spell') ||
+               exerciseLower.includes('letter') ||
+               exerciseLower.includes('rhyme') ||
+               exerciseLower.includes('unscramble')) {
         detectedSubject = 'english';
-      } else if (exerciseLower.includes('planet') || 
-                exerciseLower.includes('animal') || 
-                exerciseLower.includes('plant') || 
-                exerciseLower.includes('water') ||
-                exerciseLower.includes('weather') ||
-                exerciseLower.includes('body')) {
-        detectedSubject = 'science';
-      } else {
-        detectedSubject = 'general';
       }
+      else if (exerciseLower.includes('animal') || 
+               exerciseLower.includes('plant') || 
+               exerciseLower.includes('weather') ||
+               exerciseLower.includes('body') ||
+               exerciseLower.includes('planet') ||
+               exerciseLower.includes('water') ||
+               exerciseLower.includes('sun') ||
+               exerciseLower.includes('earth') ||
+               exerciseLower.includes('nature')) {
+        detectedSubject = 'science';
+      }
+      
+      console.log('Detected subject:', detectedSubject);
     }
-    
-    console.log('Detected subject:', detectedSubject);
 
     // Create subject-specific prompts for hints
     let prompt = '';
     
     if (detectedSubject === 'math') {
-      prompt = `You are an educational assistant helping grade ${grade} students with math exercises. 
-      For the math exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
+      prompt = `You are an educational assistant providing age-appropriate math hints for grade ${grade} students.
       
-      The hint should:
-      1. Guide the student toward the mathematical concept or operation needed (addition, subtraction, etc.)
-      2. Not give away the numerical answer directly
-      3. Be age-appropriate and encouraging for a grade ${grade} student
-      4. Be clear and concise (1-2 sentences)
+      The student is working on this math problem:
+      "${exercise}"
       
-      Format your response as a JSON object with exactly this field:
-      {
-        "hint": "Your hint here"
-      }`;
+      The correct answer is: "${answer}"
+      
+      Provide a helpful hint that guides the student toward the answer without giving it away directly.
+      The hint should be age-appropriate for grade ${grade} students and encourage critical thinking.
+      
+      IMPORTANT: Be creative and generate a UNIQUE hint. Use random seed ${randomSeed} to inspire variety.
+      Choose different approaches to hint at the solution than you might typically use.
+      
+      For example:
+      - Point out a strategy they could use
+      - Remind them of a relevant math concept
+      - Break down the problem into smaller steps
+      - Suggest drawing a picture or using objects to visualize
+      
+      Keep the hint concise, encouraging, and appropriate for a grade ${grade} student.
+      Format your response as a simple text hint without any JSON formatting.`;
     } 
     else if (detectedSubject === 'english') {
-      prompt = `You are an educational assistant helping grade ${grade} students with English language exercises. 
-      For the English exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
+      prompt = `You are an educational assistant providing age-appropriate English language hints for grade ${grade} students.
       
-      The hint should:
-      1. Guide the student toward thinking about word meanings, spelling patterns, or language rules
-      2. Not give away the exact answer
-      3. Be age-appropriate and encouraging for a grade ${grade} student
-      4. Be clear and concise (1-2 sentences)
+      The student is working on this English exercise:
+      "${exercise}"
       
-      Format your response as a JSON object with exactly this field:
-      {
-        "hint": "Your hint here"
-      }`;
+      The correct answer is: "${answer}"
+      
+      Provide a helpful hint that guides the student toward the answer without giving it away directly.
+      The hint should be age-appropriate for grade ${grade} students and encourage thinking about language.
+      
+      IMPORTANT: Be creative and generate a UNIQUE hint. Use random seed ${randomSeed} to inspire variety.
+      Choose different approaches to hint at the solution than you might typically use.
+      
+      For example:
+      - Give a clue about the meaning
+      - Suggest thinking about a similar word
+      - Provide a partial example
+      - Remind them of a language rule
+      
+      Keep the hint concise, encouraging, and appropriate for a grade ${grade} student.
+      Format your response as a simple text hint without any JSON formatting.`;
     }
     else if (detectedSubject === 'science') {
-      prompt = `You are an educational assistant helping grade ${grade} students with science exercises. 
-      For the science exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
+      prompt = `You are an educational assistant providing age-appropriate science hints for grade ${grade} students.
       
-      The hint should:
-      1. Guide the student toward the scientific concept or fact needed
-      2. Relate to their everyday experiences when possible
-      3. Be age-appropriate and encouraging for a grade ${grade} student
-      4. Be clear and concise (1-2 sentences)
+      The student is working on this science question:
+      "${exercise}"
       
-      Format your response as a JSON object with exactly this field:
-      {
-        "hint": "Your hint here"
-      }`;
+      The correct answer is: "${answer}"
+      
+      Provide a helpful hint that guides the student toward the answer without giving it away directly.
+      The hint should be age-appropriate for grade ${grade} students and encourage scientific thinking.
+      
+      IMPORTANT: Be creative and generate a UNIQUE hint. Use random seed ${randomSeed} to inspire variety.
+      Choose different approaches to hint at the solution than you might typically use.
+      
+      For example:
+      - Remind them of a scientific fact they've learned
+      - Suggest an observation they could make
+      - Connect to an everyday experience
+      - Ask a guiding question that leads to the answer
+      
+      Keep the hint concise, encouraging, and appropriate for a grade ${grade} student.
+      Format your response as a simple text hint without any JSON formatting.`;
     }
     else {
-      // Default prompt for other subjects
-      prompt = `You are an educational assistant helping grade ${grade} students with exercises. 
-      For the exercise: "${exercise}" with the answer "${answer}", provide a helpful hint.
+      // General hint prompt for other subjects
+      prompt = `You are an educational assistant providing age-appropriate hints for grade ${grade} students.
       
-      The hint should:
-      1. Guide the student toward the answer without giving it away completely
-      2. Be age-appropriate and encouraging for a grade ${grade} student
-      3. Be clear and concise (1-2 sentences)
+      The student is working on this exercise:
+      "${exercise}"
       
-      Format your response as a JSON object with exactly this field:
-      {
-        "hint": "Your hint here"
-      }`;
+      The correct answer is: "${answer}"
+      
+      Provide a helpful hint that guides the student toward the answer without giving it away directly.
+      The hint should be age-appropriate for grade ${grade} students and encourage critical thinking.
+      
+      IMPORTANT: Be creative and generate a UNIQUE hint. Use random seed ${randomSeed} to inspire variety.
+      Choose different approaches to hint at the solution than you might typically use.
+      
+      Keep the hint concise, encouraging, and appropriate for a grade ${grade} student.
+      Format your response as a simple text hint without any JSON formatting.`;
     }
 
     console.log('Sending request to Anthropic API with model:', MODEL);
@@ -143,9 +187,9 @@ export default async function handler(
     try {
       const message = await anthropic.messages.create({
         model: MODEL,
-        max_tokens: 1000,
-        temperature: 0.7,
-        system: "You are a helpful educational assistant that creates age-appropriate hints for children. Always respond with valid JSON that can be parsed. Your hints should guide without giving away the answer directly.",
+        max_tokens: 300,
+        temperature: 0.9, // Increased temperature for more randomness
+        system: "You are a helpful educational assistant that provides age-appropriate hints for children. Your hints should guide students toward the answer without giving it away directly. Be encouraging and supportive. Create unique, varied hints each time.",
         messages: [
           {
             role: 'user',
@@ -164,62 +208,28 @@ export default async function handler(
       
       console.log('Response content:', responseContent);
       
-      // Parse the JSON response
-      try {
-        const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          console.log('No JSON found in response');
-          throw new Error('No JSON found in response');
-        }
-        
-        const jsonStr = jsonMatch[0];
-        console.log('Extracted JSON string:', jsonStr);
-        
-        const result = JSON.parse(jsonStr);
-        console.log('Parsed result:', result);
-        
-        if (!result.hint) {
-          console.log('Missing hint in response');
-          throw new Error('Missing hint in response');
-        }
-        
-        console.log('Successfully generated hint');
-        return res.status(200).json({
-          hint: result.hint
-        });
-      } catch (parseError) {
-        console.error('Error parsing Claude response:', parseError);
-        console.log('Raw response:', responseContent);
-        
-        // Fallback to mock data if parsing fails
-        console.log('Falling back to mock data');
-        let hint = '';
-
-        if (exercise.includes('apples')) {
-          hint = 'Try adding the numbers together. Remember, when you get more of something, you add!';
-        } else if (exercise.includes('stickers')) {
-          hint = 'When you give something away, you have less than before. Try subtracting!';
-        } else if (exercise.includes('marbles')) {
-          hint = 'Sharing equally means dividing. Try dividing the total number by the number of friends.';
-        } else if (exercise.includes('opposite')) {
-          hint = 'Think about how you feel on a very cold winter day versus a hot summer day.';
-        } else if (exercise.includes('Unscramble')) {
-          hint = 'This word is something you might do with a friend - you talk or have a conversation.';
-        } else if (exercise.includes('blank')) {
-          hint = 'Think about the position of the cat in relation to the table. If it jumped, where would it end up?';
-        } else if (exercise.includes('planet')) {
-          hint = 'It\'s the third planet from the sun and the only one known to have life.';
-        } else if (exercise.includes('plants need')) {
-          hint = 'Think about what you need to water your plants with, where you put them to get light, and what they grow in.';
-        } else if (exercise.includes('water when it freezes')) {
-          hint = 'Think about what happens when you put water in the freezer. What does it turn into?';
-        } else {
-          hint = 'Think carefully about the question and use what you\'ve learned in class!';
-        }
-
-        console.log('Returning mock hint:', hint);
-        return res.status(200).json({ hint });
+      if (!responseContent) {
+        console.log('Empty response from Anthropic API');
+        throw new Error('Empty response from Anthropic API');
       }
+      
+      // Clean up the response - remove any JSON formatting if present
+      let hint = responseContent.trim();
+      
+      // Remove JSON formatting if present
+      if (hint.startsWith('{') && hint.endsWith('}')) {
+        try {
+          const jsonObj = JSON.parse(hint);
+          hint = jsonObj.hint || jsonObj.message || jsonObj.response || hint;
+        } catch (e) {
+          // If parsing fails, keep the original hint
+          console.log('Failed to parse JSON in hint, using raw text');
+        }
+      }
+      
+      console.log('Final hint:', hint);
+      return res.status(200).json({ hint });
+      
     } catch (apiError: any) {
       console.error('Error calling Anthropic API:', apiError);
       console.error('API Error details:', {
@@ -229,15 +239,49 @@ export default async function handler(
         stack: apiError.stack
       });
       
-      // Return detailed error information for debugging
-      return res.status(500).json({ 
-        error: 'Failed to call Anthropic API', 
-        debug: {
-          message: apiError.message,
-          name: apiError.name,
-          status: apiError.status
-        } 
-      });
+      // Fallback to mock hints if API call fails
+      console.log('Falling back to mock hints');
+      
+      // Add more variety to fallback hints with randomization
+      const randomFactor = Math.floor(Math.random() * 3); // 0, 1, or 2
+      let hint = '';
+      
+      if (detectedSubject === 'math') {
+        if (randomFactor === 0) {
+          hint = "Try breaking down the problem into smaller steps. What operation do you need to use?";
+        } else if (randomFactor === 1) {
+          hint = "Drawing a picture might help you visualize this problem.";
+        } else {
+          hint = "Think about what the question is asking you to find. What information do you have?";
+        }
+      } else if (detectedSubject === 'english') {
+        if (randomFactor === 0) {
+          hint = "Think about words that have a similar meaning or the opposite meaning.";
+        } else if (randomFactor === 1) {
+          hint = "Try sounding out the letters or syllables one by one.";
+        } else {
+          hint = "Look for patterns in the words or letters.";
+        }
+      } else if (detectedSubject === 'science') {
+        if (randomFactor === 0) {
+          hint = "Think about what you've learned about this topic in class.";
+        } else if (randomFactor === 1) {
+          hint = "Consider how this works in the world around you.";
+        } else {
+          hint = "Remember the key parts or steps in this process.";
+        }
+      } else {
+        if (randomFactor === 0) {
+          hint = "Read the question carefully again and think about what it's asking.";
+        } else if (randomFactor === 1) {
+          hint = "Try to remember what you've learned about this topic.";
+        } else {
+          hint = "Break down the problem into smaller parts to make it easier.";
+        }
+      }
+      
+      console.log('Returning mock hint:', hint);
+      return res.status(200).json({ hint });
     }
   } catch (error: any) {
     console.error('Unhandled error in generate-hint:', error);
